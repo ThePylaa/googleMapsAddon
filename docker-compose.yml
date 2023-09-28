@@ -3,12 +3,14 @@ services:
 
   #Traefik Reverse Proxy
   traefik:
-    image: "traefik:v2.10"
+    image: "traefik:latest"
     container_name: "traefik"
+    restart: always
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=googlemapsaddon_traefik"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
@@ -23,30 +25,40 @@ services:
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - traefik
 
   #NextJS Website
   web:
     container_name: "gMapsWebsite"
-    build: website/Dockerfile
+    build: ./website
+    restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.website.rule=Host(`gMaps.mosers-it.de`)"
+      - "traefik.http.routers.website.rule=PathPrefix(`/gMaps`)"
+      - "traefik.http.services.website.loadbalancer.server.port=3000"
       - "traefik.http.routers.website.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=production"
+      - "traefik.http.routers.website.tls.certresolver=production"
+      - "traefik.docker.network=traefik"
+    networks:
+      - traefik
+    deploy:
+      replicas: 1
 
   #FastAPI
   api:
     container_name: "gMapsApi"
-    build: ./api/Dockerfile
+    build: ./api
+    restart: always
     environment:
       #PostGreSQL Database Credentials
       DB_USER: "maps"
       DB_PASSWORD: "nu7fML74jQoqpi"
-      DB_IP: "localhost"
+      DB_IP: "postgres"
       DB_NAME: "maps"
 
       #Redis Credentials
-      REDIS_IP:  "localhost"
+      REDIS_IP:  "redis"
       REDIS_PORT: "6379"
       REDIS_PASSWORD: "4f4qDdVo4z46Tu33"
 
@@ -75,9 +87,18 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.mosers-it.de`)"
-      - "traefik.http.routers.website.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=production"
+      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.forceSlash=true"
+      - "traefik.http.routers.api.middlewares=api-stripprefix"
+      - "traefik.http.services.api.loadbalancer.server.port=23451"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=production"
+      - "traefik.docker.network=googlemapsaddon_traefik"
+    networks:
+      - traefik
+    deploy:
+      replicas: 1
 
   #Webscraper
   #scraper:
@@ -88,22 +109,33 @@ services:
   db:
     container_name: postgres
     image: postgres:latest
+    restart: always
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: "maps"
       POSTGRES_PASSWORD: "nu7fML74jQoqpi"
+    networks:
+      - traefik
     
 
   #Redis Database
   redis:
     container_name: redis
     image: redis:latest
+    restart: always
     ports:
       - "6379:6379"
-    command: redis-server --save 20 1 --loglevel warning --requirepass 4f4qDdVo4z46Tu33
+    command: redis-server --requirepass 4f4qDdVo4z46Tu33
     volumes: 
       - cache:/data
+    networks:
+      - traefik
+
+
+networks:
+  traefik:
+
 volumes:
   cache:
     driver: local
