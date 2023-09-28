@@ -1,0 +1,109 @@
+version: "3.3"
+services:
+
+  #Traefik Reverse Proxy
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.production.acme.tlschallenge=true"
+      - "--certificatesresolvers.production.acme.email=moser.stefan02@gmail.com"
+      - "--certificatesresolvers.production.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  #NextJS Website
+  web:
+    container_name: "gMapsWebsite"
+    build: website/Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website.rule=Host(`gMaps.mosers-it.de`)"
+      - "traefik.http.routers.website.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=production"
+
+  #FastAPI
+  api:
+    container_name: "gMapsApi"
+    build: ./api/Dockerfile
+    environment:
+      #PostGreSQL Database Credentials
+      DB_USER: "maps"
+      DB_PASSWORD: "nu7fML74jQoqpi"
+      DB_IP: "localhost"
+      DB_NAME: "maps"
+
+      #Redis Credentials
+      REDIS_IP:  "localhost"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "4f4qDdVo4z46Tu33"
+
+      #Google API Key get one from https://developers.google.com/maps/documentation/javascript/get-api-key
+      GOOGLE_API_KEY: "AIzaSyD8jWP3YAQt_Kx33ygLjujKB5tiLsocKzQ"
+
+      #TankerKoenig API Key get one from https://creativecommons.tankerkoenig.de/
+      TANKERKONIG_API_KEY: "e9016280-b1f1-78a5-f8e7-7ab10081903b"
+
+      #Local API Configurations
+      API_IP: "0.0.0.0"
+      API_PORT: "23451"
+
+      #Hashing Algorithm and Secret Key
+      SECRET_KEY: "d0212db3d7b090cfd5f384b4b375c4bf"
+      ALGORITHM: "HS256"
+
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin"
+      ADMIN_EMAIL: "admin@admin.com"
+      ADMIN_FORENAME: "admin"
+      ADMIN_SURNAME: "admin"
+
+      # True or False
+      DEBUG: "False" 
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.mosers-it.de`)"
+      - "traefik.http.routers.website.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=production"
+
+  #Webscraper
+  #scraper:
+    #container_name: "gMapsScraper"
+    #build: speedCameraScraper/Dockerfile
+
+  #PostgreSQL Database
+  db:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "maps"
+      POSTGRES_PASSWORD: "nu7fML74jQoqpi"
+    
+
+  #Redis Database
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass 4f4qDdVo4z46Tu33
+    volumes: 
+      - cache:/data
+volumes:
+  cache:
+    driver: local
