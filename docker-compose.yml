@@ -23,7 +23,7 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - "./letsencrypt:/letsencrypt"
+      - letsencrypt:/letsencrypt
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - traefik
@@ -35,7 +35,7 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.website.rule=PathPrefix(`/gMaps`)"
+      - "traefik.http.routers.website.rule=PathPrefix(`/`)"
       - "traefik.http.services.website.loadbalancer.server.port=3000"
       - "traefik.http.routers.website.entrypoints=websecure"
       - "traefik.http.routers.website.tls.certresolver=production"
@@ -101,9 +101,16 @@ services:
       replicas: 1
 
   #Webscraper
-  #scraper:
-    #container_name: "gMapsScraper"
-    #build: speedCameraScraper/Dockerfile
+  scraper:
+    container_name: "gMapsScraper"
+    build: ./speedCameraScraper/
+    restart: always
+    environment: 
+      API_IP: https://localhost/api
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin"
+    networks:
+      - traefik
 
   #PostgreSQL Database
   db:
@@ -115,6 +122,8 @@ services:
     environment:
       POSTGRES_USER: "maps"
       POSTGRES_PASSWORD: "nu7fML74jQoqpi"
+    volumes:
+      - postgres:/var/lib/postgresql/data
     networks:
       - traefik
     
@@ -138,4 +147,8 @@ networks:
 
 volumes:
   cache:
+    driver: local
+  letsencrypt:
+    driver: local
+  postgres:
     driver: local
