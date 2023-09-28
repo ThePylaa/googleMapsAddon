@@ -38,7 +38,6 @@ export default function Home() {
   // This function gets the user location if it isn't the standard
   useEffect(() => {
     if (userLocation.lat == 50.686180 && userLocation.lng == 10.249444) {
-      console.log(userLocation)
       getUserLocation();
     }
   }, [open]);
