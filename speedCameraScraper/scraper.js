@@ -1,8 +1,8 @@
 const puppeteer = require("puppeteer");
 require("dotenv").config();
 const fs = require("fs");
-const { start } = require("repl");
 
+// scrapes the speed cameras from the website
 async function scrape() {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
@@ -19,7 +19,9 @@ async function scrape() {
   console.log("Finished Scraping");
 }
 
-async function getSpeedCameras(params) {
+// gets the speed cameras from the scraped data
+// and writes them to a json file
+async function getSpeedCameras() {
   await scrape();
 
   const rawContent = fs.readFileSync("content.txt", "utf8", (err, data) => {
@@ -151,6 +153,7 @@ async function deleteCameras() {
   console.log("Deleted all Cameras");
 }
 
+// sends the speed cameras to the server
 async function sendToServer() {
   let lengthOfFile = await getSpeedCameras();
   await deleteCameras();
@@ -180,6 +183,7 @@ async function sendToServer() {
   console.log("Finished sending");
 }
 
+// starts the scraper and sends the data to the server every 15 minutes
 async function startScraper() {
   while (true) {
     await sendToServer();
