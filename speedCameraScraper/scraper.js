@@ -186,8 +186,9 @@ async function sendToServer() {
 // starts the scraper and sends the data to the server every 15 minutes
 async function startScraper() {
   while (true) {
+    await new Promise((resolve) => setTimeout(resolve, 150000));
     await sendToServer();
-    console.log("Waiting 15 minutes");
+    console.log("Waiting 17,5 minutes");
     await new Promise((resolve) => setTimeout(resolve, 900000));
   }
 }
