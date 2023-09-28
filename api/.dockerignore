@@ -1,0 +1,11 @@
+**/venv/
+**/env/
+**/*.env
+**/*.ENV
+**/*.gitginore
+**/Dockerfile
+**/*.log
+**/__pycache__/
+**/.vscode/
+**/.dockerignore
+**/README.md
