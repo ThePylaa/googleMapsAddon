@@ -103,8 +103,8 @@ async function getSpeedCameras() {
 // delete all cameras as admin
 async function deleteCameras() {
   var detailsAdminUser = {
-    username: "test",
-    password: "test",
+    username: process.env.ADMIN_USERNAME,
+    password: process.env.ADMIN_PASSWORD,
     scope: "admin",
   };
   let token;
