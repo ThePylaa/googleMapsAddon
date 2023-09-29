@@ -360,7 +360,7 @@ export default function Home() {
                     </form>
                 <button
                   onClick={handleSearchStationOnRoute}
-                  className="flex m-5 text-center hover:underline bg-blue-500 px-8 py-4 font-bold text-white duration-300 ease-in-out hover:bg-opacity-80 rounded-full transition hover:scale-125 delay-100 cursor-pointer"
+                  className="flex m-5 text-center self-center hover:underline bg-blue-500 px-8 py-4 font-bold text-white duration-300 ease-in-out hover:bg-opacity-80 rounded-full transition hover:scale-125 delay-100 cursor-pointer"
                 >
                   Search For Petrol Stations On Route
                 </button>
