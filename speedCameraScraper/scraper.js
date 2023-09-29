@@ -146,11 +146,10 @@ async function deleteCameras() {
         authorization: "bearer " + token,
       },
     });
+    console.log("Deleted all Cameras");
   } catch (error) {
     console.error("Cant delete cameras:", error);
   }
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  console.log("Deleted all Cameras");
 }
 
 // sends the speed cameras to the server
@@ -183,14 +182,13 @@ async function sendToServer() {
   console.log("Finished sending");
 }
 
-// starts the scraper and sends the data to the server every 15 minutes
+// starts the scraper and sends the data to the server every 16 minutes
 async function startScraper() {
   while (true) {
-    await new Promise((resolve) => setTimeout(resolve, 150000));
+    await new Promise((resolve) => setTimeout(resolve, 60000));
     await sendToServer();
-    console.log("Waiting 17,5 minutes");
+    console.log("Waiting 16 minutes");
     await new Promise((resolve) => setTimeout(resolve, 900000));
   }
 }
-
 startScraper();
