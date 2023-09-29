@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Uuid,Float,Integer
 
 from utils.db.db import Base
 
+# Database model for stations
 class Stations(Base):
     __tablename__ = "stations"
 

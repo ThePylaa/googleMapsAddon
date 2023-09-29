@@ -28,7 +28,7 @@ app = FastAPI(
     version="v1.0.0",
 )
 
-#Add  Routes to the API
+#Add Routes to the API
 app.include_router(user.router)
 app.include_router(camera.router)
 app.include_router(station.router)

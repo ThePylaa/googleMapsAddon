@@ -6,28 +6,30 @@ import polyline
 import requests
 import os
 
-
+# This is the gMaps router. It is used to get the address and coordinates of a location and to get the polyline of a route.
 router = APIRouter(tags=["gMaps"],prefix="/gMaps")
 
+# This endpoint is used to get the address of a location by lat lng.
 @router.post("/getAddress")
 def returnAddress(coordinates:getAddressSchema):
     address = getAddress(lat=coordinates.lat,lng=coordinates.lng,language=coordinates.language)
 
     return address
 
-
-
+#  This endpoint is used to get the coordinates of a location by address.
 @router.post("/getCoordinates")
 def returnCoordinates(address:getCoordinatesSchema):
     coordinates = getCoordinates(address=address.address,language=address.language)
     
     return coordinates
 
+# This endpoint is used to get the polyline of a route.
 @router.post("/getPolyline")
 def returnPolyline(origin:str, destination:str):
     polyline = getPolylineStr(originAddress=origin,destinationAddress=destination,mode="driving",language="en",alternatives=False)
     return polyline
 
+# This endpoint is used to get the stations along a route.
 @router.post("/getRouteInformation")
 async def getRouteInformation(routeInformation:routeInformation):
 
@@ -61,6 +63,7 @@ async def getRouteInformation(routeInformation:routeInformation):
             
             response_json_data = response.json()
 
+            # Check if the response contains any valid stations
             try:
                 stations_json_list = response_json_data["stations"]
                 for station_data in stations_json_list:
@@ -72,7 +75,7 @@ async def getRouteInformation(routeInformation:routeInformation):
                     detail="Lat or/and Lng out of bounds"
                 )
             
-        #Check if everey coordinate is at least routeInformation.rad km's away from the last coordinate
+        #Check if every coordinate is at least routeInformation.rad km's away from the last coordinate
         if getDistance(origin,coordinate) > routeInformation.rad:
             origin = coordinate
             PARAMS["lat"] = origin[0]
@@ -106,6 +109,7 @@ async def getRouteInformation(routeInformation:routeInformation):
         if station[routeInformation.type] is None:
             stations_list.remove(station)
 
+    # Sort the stations by price the requested fuel type
     stations_list.sort(key=lambda x: x[routeInformation.type])
 
     stations_list = stations_list[:6]

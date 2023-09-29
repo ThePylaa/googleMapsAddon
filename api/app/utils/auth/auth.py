@@ -12,6 +12,7 @@ from jose import JWTError, jwt
 import os
 from utils.db.db import get_db
 from utils.db.redis import rs
+# This is the auth utils. It is used to verify the user and to create a new access token.
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -25,12 +26,15 @@ oauth2_scheme = OAuth2PasswordBearer(
 pwd_context = CryptContext(schemes=["bcrypt"])
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+# This function is used to verify the password.
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+# This function is used to hash the password.
 def hashPassword(plain_password):
     return pwd_context.hash(plain_password)
 
+# This function is used to create a new access token and safe it to redis.
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=30)
@@ -39,6 +43,9 @@ def create_access_token(data: dict):
     rs.setex(name=data.get("userUuid"),time=1800,value=encoded_jwt)
     return encoded_jwt
 
+# This function is used to verify the user.
+# It checks if the user exists in the postqres database and if the token is still valid in the redis database.
+# It also checks if the user has the required scopes.
 def verifyUser(security_scopes: SecurityScopes,token: Annotated[str,Depends(oauth2_scheme)],db: Session= Depends(get_db)):
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'

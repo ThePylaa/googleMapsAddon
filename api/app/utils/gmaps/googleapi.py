@@ -4,8 +4,12 @@ import polyline
 from typing import Literal
 from math import sin, cos, sqrt, atan2, radians
 
+# Google Maps API
+
 gmaps = googlemaps.Client(key=os.getenv('GOOGLE_API_KEY'))
 
+# This function is used to get the address from a given coordinate.
+# It returns a dictionary with the address information.
 def getAddress(lat:float,lng:float,language:str):
     geocode_result = gmaps.reverse_geocode(latlng=(lat,lng),language=language)
 
@@ -27,6 +31,8 @@ def getAddress(lat:float,lng:float,language:str):
     
     return address
 
+# This function is used to get the coordinates from a given address.
+# It returns a dictionary with the coordinates information.
 def getCoordinates(address:str,language:str):
     geocode_result = gmaps.geocode(address=address,language=language)
 
@@ -40,12 +46,15 @@ def getCoordinates(address:str,language:str):
     
     return coordinates
 
+# This function is used to get the polyline from a given origin and destination address.
+# It returns a string with the polyline.
 def getPolylineStr(originAddress:str,destinationAddress:str,mode:Literal["driving","walking","transit","bicycling"] = "driving",language:str = "en",alternatives:bool = False):
     route = gmaps.directions(origin=originAddress,destination=destinationAddress,mode=mode,alternatives=alternatives,language=language)[0]
     polyline_str = route["overview_polyline"]["points"]
     return polyline_str
 
-
+# This function is used to get the distance between two coordinates.
+# It returns the distance in kilometers.
 def getDistance(coord1:tuple,coord2:tuple):
     lat1 = radians(coord1[0])
     lng1 = radians(coord1[1])

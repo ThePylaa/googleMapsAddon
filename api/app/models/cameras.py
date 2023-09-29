@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float,Uuid
 
 from utils.db.db import Base
 
+# Database model for cameras
 class Cameras(Base):
     __tablename__ = "cameras"
 

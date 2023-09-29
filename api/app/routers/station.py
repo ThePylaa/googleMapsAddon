@@ -5,8 +5,10 @@ import os
 import uuid
 from schemas.station import searchStation, foundStation, Station
 
+# This is the station router. It is used to get the information of a specific petrol station and to get a list of petrol stations.
 router = APIRouter(tags=["station"],prefix="/station")
 
+# This endpoint is used to get the information of a specific petrol station.
 @router.get("/",response_model=Station)
 def info(uuid: uuid.UUID):
 
@@ -23,9 +25,12 @@ def info(uuid: uuid.UUID):
 
     return JSONResponse(stations_data)
 
+# This endpoint is used to get a list of petrol stations around the requestet coordinates with specific radius.
 @router.post("/listNearByStations",response_model=list[foundStation])
 async def searchStations(search: searchStation):
     
+    # Check if the requested fueltype is all and if so, check if the sort is price and if so, raise an error
+    # You can not sort by price when every fueltype is selected -> what should you sort by?
     if search.type == "all":
         if search.sort == "price":
             raise HTTPException(
@@ -55,7 +60,9 @@ async def searchStations(search: searchStation):
         )
     stations=[]
 
+    # Check if the response contains any valid stations
     for station_data in stations_json_list:
+        # Check if the requested fueltype is all and if so, add every station and every price to the list
         if search.type == "all":
             station = foundStation(
                 uuid=uuid.UUID(station_data["id"]),
@@ -76,6 +83,7 @@ async def searchStations(search: searchStation):
             stations.append(station)
             continue
         match search.type:
+            # Check if the requested fueltype is e5 and if so, add every station and the price of e5 to the list
                 case "e5":
                     station = foundStation(
                         uuid=uuid.UUID(station_data["id"]),
@@ -91,6 +99,7 @@ async def searchStations(search: searchStation):
                         houseNumber=station_data["houseNumber"],
                         postCode=station_data["postCode"]
                     )
+                # Check if the requested fueltype is e10 and if so, add every station and the price of e10 to the list
                 case "e10":
                     station = foundStation(
                         uuid=uuid.UUID(station_data["id"]),
@@ -106,6 +115,7 @@ async def searchStations(search: searchStation):
                         houseNumber=station_data["houseNumber"],
                         postCode=station_data["postCode"]
                     )
+                # Check if the requested fueltype is diesel and if so, add every station and the price of diesel to the list
                 case "diesel":
                     station = foundStation(
                         uuid=uuid.UUID(station_data["id"]),

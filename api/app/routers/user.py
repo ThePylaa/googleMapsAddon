@@ -12,12 +12,15 @@ from sqlalchemy import or_
 from utils.auth.auth import hashPassword
 from utils.db.redis import rs
 
+# This is the user router. It is used to get the information of the current user, to update the information of the current user, to register a new user and to sign in and out.
 router = APIRouter(tags=["user"],prefix="/user")
 
+# This endpoint is used to get the information of the current user.
 @router.get("/me",response_model=User)
 def info(db_user: Annotated[User,Security(verifyUser,scopes=['user'])]):
     return db_user
 
+# This endpoint is used to update the information of the current user.
 @router.put("/update")
 def updateInfo(user_update: updateUser,db_user: Annotated[User,Security(verifyUser,scopes=["user"])],db: Session = Depends(get_db)):
     if db_user:
@@ -48,6 +51,7 @@ def updateInfo(user_update: updateUser,db_user: Annotated[User,Security(verifyUs
     db.refresh(db_user)
     return db_user
 
+# This endpoint is used to register a new user.
 @router.post("/register")
 def register(user: createUser, db: Session = Depends(get_db)):
 
@@ -67,6 +71,8 @@ def register(user: createUser, db: Session = Depends(get_db)):
     db.refresh(dbUser)
     return dbUser
 
+# This endpoint is used to get a standard oauth2 token
+# The scopes are used to determine if the user is an admin or not
 @router.post("/signIn")
 def signIn(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
     """Function to get a standard oauth2 token"""
@@ -109,13 +115,18 @@ def signIn(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+# This endpoint is used to sign out the current user.
+# It deletes the token from the redis database
 @router.get("/signOut")
 def signOut(db_user: Annotated[User,Security(verifyUser,scopes=["user"])]):
     rs.delete(str(db_user.uuid))
     return status.HTTP_200_OK
 
+# This endpoint is used to delete the current user.
+# It deletes the user from the database
 @router.delete("/me")
 def delete_me(db_user: Annotated[User,Security(verifyUser,scopes=["user"])],db: Session = Depends(get_db)):
     db.delete(db_user)
+    rs.delete(str(db_user.uuid))
     db.commit()
     return status.HTTP_200_OK
