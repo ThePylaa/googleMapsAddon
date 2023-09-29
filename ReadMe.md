@@ -17,7 +17,7 @@ After setting the .env.local you can start the project with<br>
 
 ## After Start
 
-You have to create the admin:admin manually by accessing [this link](https://localhost/api/admin/create) or with this URL(in localhost envoirement):<br>
+You have to create the admin:admin manually by accessing [this link](https://localhost/api/admin/create) or with this URL (in localhost envoirement):<br>
 ```https://localhost/api/admin/create```<br>
 **Important:** YOU HAVE TO DO THIS IN ORDER TO GET THE WEBSCRAPER RUNNING<br>
 After that you can login with admin:admin or with the specified credentials of the admin account inside the docker-compose.yml <br>
