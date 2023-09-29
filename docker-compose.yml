@@ -15,7 +15,9 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.production.acme.tlschallenge=true"
+      - "--certificatesresolvers.production.acme.httpchallenge=true"
+      - "--certificatesresolvers.production.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.production.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
       - "--certificatesresolvers.production.acme.email=moser.stefan02@gmail.com"
       - "--certificatesresolvers.production.acme.storage=/letsencrypt/acme.json"
     ports:
@@ -106,7 +108,7 @@ services:
     build: ./speedCameraScraper/
     restart: always
     environment: 
-      API_IP: https://localhost/api
+      API_IP: http://api:23451
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "admin"
     networks:
