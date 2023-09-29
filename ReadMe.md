@@ -19,7 +19,8 @@ After setting the .env.local you can start the project with<br>
 
 You have to create the admin:admin manually by accessing [this link](https://localhost/api/admin/create) or with this URL (in localhost envoirement):<br>
 ```https://localhost/api/admin/create```<br>
-**Important:** YOU HAVE TO DO THIS IN ORDER TO GET THE WEBSCRAPER RUNNING<br>
+**Important:** YOU HAVE TO DO THIS IN ORDER TO GET THE WEBSCRAPER RUNNING.<br>It will wait 1 minute, then 15. If you want to see the speed cameras instant in the frontend you got this 1 minute time window. Otherwise you have to wait for the next "scraping cicle".<br>
+
 After that you can login with admin:admin or with the specified credentials of the admin account inside the docker-compose.yml <br>
 **Note:** If you want to change the default admin credentials you also have to change them inside the envoirement variables for the scraper service inside the docker-compose.yml<br>
 
